@@ -1,8 +1,8 @@
 import './app.css'
 import { h } from 'preact'
-import { useState } from 'preact/hooks'
+import { useState, useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
-import foods from "./assets/meallist.json";
+import foods from "./assets/meallist.json"
 
 export function App() {
   const [dailyCalories, setDailyCalories] = useState(1650)
@@ -18,6 +18,10 @@ export function App() {
     { type: "consumed", calories: 100 },
     { type: "remaining", calories: 1400 },
   ]
+
+  useEffect(() => {
+    console.log("load database here!")
+  }, []);
 
   const caloriesPerCategory = (list:any[]) => {
     const total = list.reduce((sum, l) => {

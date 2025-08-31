@@ -3,7 +3,8 @@
 		{
 			"title": "2 pcs Pandesal",
 			"description": "Soft Filipino bread rolls",
-			"calories": 300
+			"calories": 300,
+			"type": "breakfast"
 		},
 		{
 			"title": "1 cup Oatmeal with Banana",

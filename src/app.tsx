@@ -7,7 +7,8 @@ import foods from "./assets/meallist.json";
 export function App() {
   const [dailyCalories, setDailyCalories] = useState(1650)
 	const [isOpenModal, setIsOpenModal ] = useState<boolean>(false)
-	const [formData, setFormData ] = useState({
+	const [formData, setFormData ] = useState<MealForm>({
+		id: "",
 		title: "",
 		description: "",
 		calories: 0
@@ -51,8 +52,16 @@ export function App() {
 	} 
 
 	const saveForm = (e: FormEvent) => {
-			e.preventDefault()
-			
+			e.preventDefault();
+
+			// condition here check data before continuing
+			setFormData((prev) => {
+				return {
+					...prev,
+					"id": crypto.randomUUID().replaceAll("-" , "")
+				}
+			})			
+
 			alert('successfully saved!');
 			closeModal()
 	}
@@ -89,15 +98,15 @@ export function App() {
                 </div>
                   <p>{ caloriesPerCategory(mealList) }</p>
                 </div>
-                <div className="ml-2">
+                <div>
                   {mealList.map((meal) => (
-                    <div className="flex justify-between items-center border-b-1 border-b-gray-200">
-                      <div className="px-2">
-                        <p>{ meal.title }</p>
-                        <p className="text-sm">{ meal.description }</p>
-                      </div>
-                      <p className="p-1 font-semibold">{ meal.calories}</p>
-                    </div>
+										<div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
+											<div className="px-2">
+												<p>{ meal.title }</p>
+												<p className="text-sm">{ meal.description }</p>
+											</div>
+											<p className="p-1 font-semibold">{ meal.calories}</p>
+										</div>
                   ))}
                 </div>
               </div>

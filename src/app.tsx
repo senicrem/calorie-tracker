@@ -1,31 +1,17 @@
-import { useState } from 'preact/hooks'
 import './app.css'
+import { h } from 'preact'
+import { useState } from 'preact/hooks'
+import type { FormEvent } from 'preact/compat'
+import foods from "./assets/meallist.json";
 
 export function App() {
   const [dailyCalories, setDailyCalories] = useState(1650)
-  const foods = {
-    breakfast: [
-      { title: "2 pcs Pandesal", description: "Soft Filipino bread rolls", calories: 300 },
-      { title: "1 cup Oatmeal with Banana", description: "Rolled oats with sliced banana", calories: 250 },
-      { title: "2 Boiled Eggs", description: "Hard-boiled chicken eggs", calories: 160 },
-      { title: "1 cup Fried Rice", description: "Garlic fried rice", calories: 320 },
-      { title: "1 cup Coffee with Milk", description: "Nescafe with evaporated milk", calories: 90 }
-    ],
-    lunch: [
-      { title: "1 cup White Rice", description: "Steamed white rice", calories: 200 },
-      { title: "150g Grilled Chicken Breast", description: "Skinless chicken breast, grilled", calories: 280 },
-      { title: "1 cup Adobong Sitaw", description: "String beans cooked in soy sauce and vinegar", calories: 180 },
-      { title: "1 cup Tinola", description: "Chicken soup with green papaya and malunggay", calories: 220 },
-      { title: "1 pc Fried Tilapia", description: "Pan-fried tilapia fish", calories: 350 }
-    ],
-    dinner: [
-      { title: "1 cup Brown Rice", description: "Steamed brown rice", calories: 215 },
-      { title: "100g Roasted Pork", description: "Oven-roasted pork belly", calories: 350 },
-      { title: "1 cup Pinakbet", description: "Mixed vegetables with bagoong", calories: 200 },
-      { title: "1 bowl Sinigang na Baboy", description: "Pork soup with tamarind broth and vegetables", calories: 400 },
-      { title: "1 Banana", description: "Medium ripe banana", calories: 105 }
-    ]
-  }
+	const [isOpenModal, setIsOpenModal ] = useState<boolean>(false)
+	const [formData, setFormData ] = useState({
+		title: "",
+		description: "",
+		calories: 0
+	})
 
   const caloriesData = [
     { type: "consumed", calories: 100 },
@@ -39,40 +25,78 @@ export function App() {
 
     return total
   }
+	
+	const openModal = () => {
+		setIsOpenModal(true)
+	}
+
+	const closeModal = () => {
+		setIsOpenModal(false)
+
+		setFormData({
+			title: "",
+			description: "",
+			calories: 0
+		})
+	}
+
+	const handleFormChanges = (e: h.JSX.TargetedEvent<HTMLInputElement | HTMLTextAreaElement, Event>) => {
+		const {name, value} = e.currentTarget
+		setFormData((prev) => {
+			return {
+				...prev,
+				[name]: value
+			}
+		})
+	} 
+
+	const saveForm = (e: FormEvent) => {
+			e.preventDefault()
+			
+			alert('successfully saved!');
+			closeModal()
+	}
 
   return (
     <>
-      <div class="flex justify-center bg-gray-200">
-        <div class="w-[700px] h-screen bg-white p-2">
-          <div class="grid grid-cols-2 gap-2">
+      <div className="flex justify-center bg-gray-200">
+        <div className="w-[700px] h-screen bg-white p-2">
+          <div className="grid grid-cols-2 gap-2">
             {caloriesData.map((x) => (
-              <div class="p-1 bg-gray-200 capitalize text-center">
-                <p class="text-2xl font-semibold">{ x.calories }</p>
+              <div className="p-1 bg-gray-200 capitalize text-center">
+                <p className="text-2xl font-semibold">{ x.calories }</p>
                 <p>{ x.type }</p>
               </div>
             ))}
           </div>
 
-          <div class="mt-2 py-2 w-full bg-gray-300">
-            <div class="text-center">Today</div>
+          <div className="mt-2 py-2 w-full bg-gray-300">
+            <div className="text-center">Today</div>
             <p></p>
           </div>
 
-          <div class="w-full mt-2">
+          <div className="w-full mt-2">
           {Object.entries(foods).map(([mealType, mealList]) => (
               <div>
-                <div class="bg-gray-200 p-2 uppercase flex justify-between">
+                <div className="bg-gray-200 p-2 uppercase flex justify-between items-center">
+                <div className="flex gap-2">
+                  <p className="bg-black text-white flex justify-center items-center p-1 hover:scale-110 transition-transform cursor-pointer" onClick={openModal}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                  </p>
                   <p>{ mealType }</p>
+                </div>
                   <p>{ caloriesPerCategory(mealList) }</p>
                 </div>
-                <div class="ml-2">
+                <div className="ml-2">
                   {mealList.map((meal) => (
-                    <div class="flex justify-between items-center border-b-1 border-b-gray-200">
-                      <div class="px-2">
+                    <div className="flex justify-between items-center border-b-1 border-b-gray-200">
+                      <div className="px-2">
                         <p>{ meal.title }</p>
-                        <p class="text-sm">{ meal.description }</p>
+                        <p className="text-sm">{ meal.description }</p>
                       </div>
-                      <p class="p-1 font-semibold">{ meal.calories}</p>
+                      <p className="p-1 font-semibold">{ meal.calories}</p>
                     </div>
                   ))}
                 </div>
@@ -80,6 +104,46 @@ export function App() {
             ))}
           </div>
         </div>
+      </div>
+			
+      {/* Modal */}
+      <div className={`${isOpenModal ? 'block' : 'hidden'}`}>
+				<div className="fixed inset-0 bg-black/50 z-40"></div>
+				<div className="fixed inset-0 flex items-center justify-center z-50">
+					<div className="bg-white p-6 shadow-lg w-[600px]">
+						<form onSubmit={saveForm}>
+							<h2 className="text-xl font-bold">Add {dailyCalories}</h2>
+							<div className="flex flex-col py-5 gap-2">
+								<label htmlFor="">Title</label>
+								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									type='text'
+									name="title"
+									onChange={handleFormChanges}
+								/>
+								<label htmlFor="">description</label>
+								<textarea class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									name="description"
+									onChange={handleFormChanges}
+								></textarea>	
+								<label htmlFor="">Calories</label>
+								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+									type='number'
+									name="calories"
+									onChange={handleFormChanges}
+								/>
+							</div>
+							<div className="flex justify-end gap-1">
+								<button className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700"
+									type="submit"
+								>Save</button>
+								<button className="bg-gray-600 text-white px-4 py-2 hover:bg-gray-700"
+									type="button"
+									onClick={closeModal}
+								>Close</button>
+							</div>
+						</form>
+					</div>
+				</div>
       </div>
     </>
   )

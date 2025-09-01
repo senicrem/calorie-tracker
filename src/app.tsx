@@ -2,7 +2,7 @@ import './app.css'
 import { h } from 'preact'
 import { useState, useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
-import list from "./assets/meallist.json"
+import list from "./data/meallist.json"
 
 export function App() {
   const [dailyCalories, setDailyCalories] = useState(1500)
@@ -76,9 +76,7 @@ console.log(foods);
     closeModal()
 	}
 
-	const onClickMealList = (id: string) => {
-		
-	}
+	const onClickMealList = (id: string) => {}
 
   return (
     <>

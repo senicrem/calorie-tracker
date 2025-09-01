@@ -1,84 +1,107 @@
-{
-	"breakfast": [
-		{
-			"title": "2 pcs Pandesal",
-			"description": "Soft Filipino bread rolls",
-			"calories": 300,
-			"type": "breakfast"
-		},
-		{
-			"title": "1 cup Oatmeal with Banana",
-			"description": "Rolled oats with sliced banana",
-			"calories": 250
-		},
-		{
-			"title": "2 Boiled Eggs",
-			"description": "Hard-boiled chicken eggs",
-			"calories": 160
-		},
-		{
-			"title": "1 cup Fried Rice",
-			"description": "Garlic fried rice",
-			"calories": 320
-		},
-		{
-			"title": "1 cup Coffee with Milk",
-			"description": "Nescafe with evaporated milk",
-			"calories": 90
-		}
-	],
-	"lunch": [
-		{
-			"title": "1 cup White Rice",
-			"description": "Steamed white rice",
-			"calories": 200
-		},
-		{
-			"title": "150g Grilled Chicken Breast",
-			"description": "Skinless chicken breast, grilled",
-			"calories": 280
-		},
-		{
-			"title": "1 cup Adobong Sitaw",
-			"description": "String beans cooked in soy sauce and vinegar",
-			"calories": 180
-		},
-		{
-			"title": "1 cup Tinola",
-			"description": "Chicken soup with green papaya and malunggay",
-			"calories": 220
-		},
-		{
-			"title": "1 pc Fried Tilapia",
-			"description": "Pan-fried tilapia fish",
-			"calories": 350
-		}
-	],
-	"dinner": [
-		{
-			"title": "1 cup Brown Rice",
-			"description": "Steamed brown rice",
-			"calories": 215
-		},
-		{
-			"title": "100g Roasted Pork",
-			"description": "Oven-roasted pork belly",
-			"calories": 350
-		},
-		{
-			"title": "1 cup Pinakbet",
-			"description": "Mixed vegetables with bagoong",
-			"calories": 200
-		},
-		{
-			"title": "1 bowl Sinigang na Baboy",
-			"description": "Pork soup with tamarind broth and vegetables",
-			"calories": 400
-		},
-		{
-			"title": "1 Banana",
-			"description": "Medium ripe banana",
-			"calories": 105
-		}
-	]
-}
+[
+  {
+    "title": "2 pcs Pandesal",
+    "description": "Soft Filipino bread rolls",
+    "calories": 300,
+    "type": "breakfast",
+    "id": "d1e4dfa3-48b9-4009-9c4b-e6bfb466563c"
+  },
+  {
+    "title": "Tapsilog",
+    "description": "Beef tapa, fried rice, and egg",
+    "calories": 550,
+    "type": "breakfast",
+    "id": "b65ba588-b79a-4468-bbc6-ce86507f8f05"
+  },
+  {
+    "title": "Arroz Caldo",
+    "description": "Rice porridge with chicken and egg",
+    "calories": 400,
+    "type": "breakfast",
+    "id": "7a547f7a-b023-48cb-9e9a-4950399cde33"
+  },
+  {
+    "title": "Champorado",
+    "description": "Chocolate rice porridge with milk",
+    "calories": 420,
+    "type": "breakfast",
+    "id": "6db73295-ffd8-4dbb-8086-7a3ab8ca4767"
+  },
+  {
+    "title": "Omelette with Vegetables",
+    "description": "Egg omelette with onions, tomatoes, and peppers",
+    "calories": 350,
+    "type": "breakfast",
+    "id": "b5300b87-287d-46e3-8875-0a41033b2064"
+  },
+  {
+    "title": "Chicken Adobo with Rice",
+    "description": "Braised chicken in soy sauce, vinegar, and garlic",
+    "calories": 650,
+    "type": "lunch",
+    "id": "be9c18d6-bfe5-470f-8ce6-604020b9c9cf"
+  },
+  {
+    "title": "Sinigang na Baboy",
+    "description": "Pork in sour tamarind soup with vegetables",
+    "calories": 600,
+    "type": "lunch",
+    "id": "b9d83680-9e56-41b7-a4c6-0a05b70f7136"
+  },
+  {
+    "title": "Beef Caldereta",
+    "description": "Beef stew with tomato sauce, liver spread, and vegetables",
+    "calories": 750,
+    "type": "lunch",
+    "id": "c747c7f3-14be-4521-9a47-6b54cb2caa43"
+  },
+  {
+    "title": "Tinola",
+    "description": "Chicken soup with ginger, papaya, and chili leaves",
+    "calories": 450,
+    "type": "lunch",
+    "id": "ed184e86-f622-4568-910c-04907e1f5da1"
+  },
+  {
+    "title": "Lumpiang Shanghai",
+    "description": "Fried spring rolls with pork and vegetables",
+    "calories": 550,
+    "type": "lunch",
+    "id": "c32ee9e6-35d2-4790-abe9-50279d5f39de"
+  },
+  {
+    "title": "Grilled Bangus",
+    "description": "Stuffed milkfish grilled to perfection",
+    "calories": 520,
+    "type": "dinner",
+    "id": "597d04aa-82e1-46c1-9ea4-79a104508f40"
+  },
+  {
+    "title": "Chicken Curry",
+    "description": "Filipino-style chicken curry with potatoes and carrots",
+    "calories": 650,
+    "type": "dinner",
+    "id": "e4b53651-f052-4dd4-b7dd-d86a4c1a35c6"
+  },
+  {
+    "title": "Bulalo",
+    "description": "Beef shank soup with corn and vegetables",
+    "calories": 780,
+    "type": "dinner",
+    "id": "a157a0d8-55b2-4871-8308-fd2aa2cb8440"
+  },
+  {
+    "title": "Chopsuey",
+    "description": "Stir-fried mixed vegetables with chicken and shrimp",
+    "calories": 500,
+    "type": "dinner",
+    "id": "b8fb0da7-3263-48cf-9fd4-b74b89f6a242"
+  },
+  {
+    "title": "Adobong Pusit",
+    "description": "Squid stewed in vinegar and soy sauce",
+    "calories": 480,
+    "type": "dinner",
+    "id": "cfdbeb93-9b8d-4322-846d-47254de2d41e"
+  }
+]

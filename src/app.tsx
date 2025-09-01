@@ -2,28 +2,32 @@ import './app.css'
 import { h } from 'preact'
 import { useState, useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
-import foods from "./assets/meallist.json"
+import list from "./assets/meallist.json"
 
 export function App() {
-  const [dailyCalories, setDailyCalories] = useState(1650)
+  const [dailyCalories, setDailyCalories] = useState(1500)
 	const [isOpenModal, setIsOpenModal ] = useState<boolean>(false)
 	const [formData, setFormData ] = useState<MealForm>({
 		id: "",
 		title: "",
 		description: "",
-		calories: 0
+		calories: 0,
+		type: ""
 	})
 
+	const foods = Object.groupBy(list, (l) => l.type);
   const caloriesData = [
     { type: "consumed", calories: 100 },
     { type: "remaining", calories: 1400 },
   ]
-
+console.log(foods);
   useEffect(() => {
     console.log("load database here!")
   }, []);
 
-  const caloriesPerCategory = (list:any[]) => {
+  const caloriesPerCategory = (list:MealForm[] | undefined) => {
+		if (list === undefined) return 0;
+
     const total = list.reduce((sum, l) => {
       return sum += l.calories
     }, 0)
@@ -39,9 +43,11 @@ export function App() {
 		setIsOpenModal(false)
 
 		setFormData({
+			id: "",
 			title: "",
 			description: "",
-			calories: 0
+			calories: 0,
+			type: ""
 		})
 	}
 
@@ -56,18 +62,22 @@ export function App() {
 	} 
 
 	const saveForm = (e: FormEvent) => {
-			e.preventDefault();
+    e.preventDefault();
+		
+    // condition here check data before continuing
+    setFormData((prev) => {
+      return {
+        ...prev,
+        "id": crypto.randomUUID().replaceAll("-" , "")
+      }
+    })			
 
-			// condition here check data before continuing
-			setFormData((prev) => {
-				return {
-					...prev,
-					"id": crypto.randomUUID().replaceAll("-" , "")
-				}
-			})			
+    alert('successfully saved!');
+    closeModal()
+	}
 
-			alert('successfully saved!');
-			closeModal()
+	const onClickMealList = (id: string) => {
+		
 	}
 
   return (
@@ -103,7 +113,7 @@ export function App() {
                   <p>{ caloriesPerCategory(mealList) }</p>
                 </div>
                 <div>
-                  {mealList.map((meal) => (
+                  {mealList?.map((meal) => (
 										<div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
 											<div className="px-2">
 												<p>{ meal.title }</p>

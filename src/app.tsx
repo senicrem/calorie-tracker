@@ -5,9 +5,12 @@ import type { FormEvent } from 'preact/compat'
 import meallist from "./data/meallist.json"
 
 export function App() {
-  const [dailyCalories, setDailyCalories] = useState(1500)
+  const MY_DAILY_CALORIES = 1_500
+  const [caloriesRemaining, setCaloriesRemaining] = useState(0)
+  const [caloriesConsumed, setCaloriesConsumed] = useState(0)
 	const [isOpenModal, setIsOpenModal ] = useState<boolean>(false)
-	const [foods, setFoods] = useState(meallist)
+	const [foods, setFoods] = useState<MealForm[]>(meallist)
+	// const [foods, setFoods] = useState<MealForm[]>([])
 	const [checkedMeal, setCheckedMeal] = useState<string[]>([])
 	const [formData, setFormData ] = useState<MealForm>({
 		id: "",
@@ -17,26 +20,19 @@ export function App() {
 		type: ""
 	})
 
-
-  const caloriesData = [
-    { type: "consumed", calories: 100 },
-    { type: "remaining", calories: 1400 },
-  ]
-
   useEffect(() => {
-    console.log("load database here!")
-    console.log("checkedMeal", checkedMeal)
-  }, [checkedMeal]);
-
-  const caloriesPerCategory = (list:MealForm[] | undefined) => {
-		if (list === undefined) return 0;
-
-    const total = list.reduce((sum, l) => {
-      return sum += l.calories
+    let totalCalories = foods.reduce((total, food) => {
+      return total += food.calories
     }, 0)
 
-    return total
-  }
+    if (typeof totalCalories === "string") {
+      totalCalories = parseInt(totalCalories);
+    }
+
+    setCaloriesRemaining(MY_DAILY_CALORIES - totalCalories)
+    setCaloriesConsumed(totalCalories);
+
+  }, [foods]);
 	
 	const openModal = () => {
 		setIsOpenModal(true)
@@ -73,9 +69,13 @@ export function App() {
         ...prev,
         "id": crypto.randomUUID().replaceAll("-" , "")
       }
-    })			
+    })
+    
+    setFoods((prev) => [
+      ...prev,
+      formData
+    ])
 
-    alert('successfully saved!');
     closeModal()
 	}
 
@@ -83,7 +83,10 @@ export function App() {
 		const { checked, value: checkValue } = e.currentTarget;
 
 		if (checked) {
-			setCheckedMeal([...checkedMeal, checkValue])
+			setCheckedMeal((prev) => [
+        ...prev,
+        checkValue
+      ])
 		}
 
 		if (!checked) {
@@ -96,13 +99,13 @@ export function App() {
 	}
 
 	const deleteMeals = () => {
-		const fud = foods.filter(f => {
-			if (checkedMeal.includes(f.id)) return;
-			return f
+		const meals = foods.filter(meal => {
+			if (checkedMeal.includes(meal.id)) return;
+			return meal
 		})
 
-		console.log("fud", fud)
-		setFoods(fud)
+		setFoods(meals);
+    setCheckedMeal([]);
 	}
 
   return (
@@ -115,13 +118,16 @@ export function App() {
           </div>
 
           <div className="mt-1 grid grid-cols-2 gap-1">
-            {caloriesData.map((x) => (
-              <div className="p-1 bg-gray-200 capitalize text-center">
-                <p className="text-2xl font-semibold">{ x.calories }</p>
-                <p>{ x.type }</p>
-              </div>
-            ))}
+             <div className="p-1 bg-gray-200 capitalize text-center">
+              <p className="text-2xl font-semibold">Consumed</p>
+              <p>{ caloriesConsumed }</p>
+            </div>
+            <div className="p-1 bg-gray-200 capitalize text-center">
+              <p className="text-2xl font-semibold">Remaining</p>
+              <p>{ caloriesRemaining }</p>
+            </div>
           </div>
+          
 
 					<div className="mt-1 w-full grid grid-cols-2">
             <button className="bg-green-100 p-1 cursor-pointer" onClick={openModal}>Add Meal</button>
@@ -130,13 +136,18 @@ export function App() {
 						</button>
           </div>
 
-          <div className="w-full mt-2">
+          <div className="w-full">
           {foods.map((meal) => (
               <div key={meal.id}>
                 <div>
 										<div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
 											<div className="px-2 flex items-center gap-5">
-												<input type="checkbox" className="h-5 w-5 accent-gray-600" value={meal.id} name="list" onClick={handleCheckBox} />
+												<input className="h-5 w-5 accent-gray-600"
+                          type="checkbox"
+                          value={meal.id}
+                          name="list"
+                          onClick={handleCheckBox}
+                        />
 												<div>
 													<p>{ meal.title }</p>
 													<p className="text-sm">{ meal.description }</p>
@@ -157,7 +168,7 @@ export function App() {
 				<div className="fixed inset-0 flex items-center justify-center z-50">
 					<div className="bg-white p-6 shadow-lg w-[600px]">
 						<form onSubmit={saveForm}>
-							<h2 className="text-xl font-bold">Add {dailyCalories}</h2>
+							<h2 className="text-xl font-bold">Add Meal</h2>
 							<div className="flex flex-col py-5 gap-2">
 								<label htmlFor="">Title</label>
 								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"

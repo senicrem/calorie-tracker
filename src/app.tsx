@@ -1,8 +1,8 @@
-import './app.css'
 import { h } from 'preact'
 import { useState, useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
 import meallist from "./data/meallist.json"
+import { Plus, Trash } from "./assets/Icons"
 
 export function App() {
   const MY_DAILY_CALORIES = 1_500
@@ -110,34 +110,33 @@ export function App() {
 
   return (
     <>
-      <div className="flex justify-center bg-gray-200">
-        <div className="w-[700px] h-screen bg-white p-2">
-					<div className="py-2 w-full bg-gray-300">
-            <div className="text-center">Today</div>
-            <p></p>
-          </div>
+      <div className="flex justify-center bg-gray-200 font-sans">
+        <div className="flex flex-col w-[700px] h-screen bg-white p-2">
 
-          <div className="mt-1 grid grid-cols-2 gap-1">
-             <div className="p-1 bg-gray-200 capitalize text-center">
-              <p className="text-2xl font-semibold">Consumed</p>
-              <p>{ caloriesConsumed }</p>
+          <div className="grid grid-cols-2 gap-1 h-40">
+             <div className="p-1 bg-gray-200 capitalize text-center flex flex-col items-center justify-center">
+              <p className="text-2xl font-light">Consumed</p>
+              <p className="text-2xl font-semibold">{ caloriesConsumed }</p>
             </div>
-            <div className="p-1 bg-gray-200 capitalize text-center">
-              <p className="text-2xl font-semibold">Remaining</p>
-              <p>{ caloriesRemaining }</p>
+            <div className="p-1 bg-gray-200 capitalize text-center  flex flex-col items-center justify-center">
+              <p className="text-2xl font-light">Remaining</p>
+              <p className="text-2xl font-semibold">{ caloriesRemaining }</p>
             </div>
           </div>
-          
 
-					<div className="mt-1 w-full grid grid-cols-2">
-            <button className="bg-green-100 p-1 cursor-pointer" onClick={openModal}>Add Meal</button>
-            <button className="bg-red-100 p-1 cursor-pointer" onClick={deleteMeals}>
-							Delete <span className={` ${checkedMeal.length ? 'inline-block': 'hidden'}`}>({checkedMeal.length})</span>
-						</button>
-          </div>
+          {foods.length > 0 && (
+            <div className="mt-1 grid gap-1 w-full">
+              <button className="bg-gray-700 text-white p-3 cursor-pointer hover:bg-gray-600 transition-colors" onClick={openModal}>
+                <div className="flex justify-center items-center">
+                  <Plus className="h-5" />
+                  <p>Meal</p>
+                </div>
+              </button>
+            </div>
+          )}
 
-          <div className="w-full">
-          {foods.map((meal) => (
+          <div className="w-full flex-grow overflow-auto">
+          {foods.length ? foods.map((meal) => (
               <div key={meal.id}>
                 <div>
 										<div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
@@ -157,8 +156,29 @@ export function App() {
 										</div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="h-full flex justify-center items-center">
+                <div className="bg-gray-50 w-50 p-2 rounded-lg flex gap-2 justify-center items-center cursor-pointer transition-transform hover:scale-125"
+                  onClick={openModal}
+                >
+                  <Plus className="text-black h-7" />
+                  <p className="font-semibold text-lg">Add Meal</p>
+                </div>
+              </div>
+            )}
           </div>
+              
+        {checkedMeal.length > 0 && (
+          <button className="bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-colors" onClick={deleteMeals}>
+            <div className="flex justify-center items-center gap-1">
+              <Trash className="h-5" />
+              <p className="text-lg font-semibold">
+                <span>{checkedMeal.length}</span>
+              </p>
+            </div>
+          </button>
+        )}
+
         </div>
       </div>
 			
@@ -171,28 +191,28 @@ export function App() {
 							<h2 className="text-xl font-bold">Add Meal</h2>
 							<div className="flex flex-col py-5 gap-2">
 								<label htmlFor="">Title</label>
-								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
 									type='text'
 									name="title"
 									onChange={handleFormChanges}
 								/>
 								<label htmlFor="">description</label>
-								<textarea class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								<textarea class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
 									name="description"
 									onChange={handleFormChanges}
 								></textarea>	
 								<label htmlFor="">Calories</label>
-								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+								<input class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
 									type='number'
 									name="calories"
 									onChange={handleFormChanges}
 								/>
 							</div>
-							<div className="flex justify-end gap-1">
-								<button className="bg-blue-600 text-white px-4 py-2 hover:bg-blue-700"
+							<div className="flex justify-end gap-1 font-semibold">
+								<button className="border-2 text-gray-700 px-4 py-2 hover:bg-gray-100 transition-colors cursor-pointer"
 									type="submit"
 								>Save</button>
-								<button className="bg-gray-600 text-white px-4 py-2 hover:bg-gray-700"
+								<button className="bg-gray-700 text-white px-4 py-2 hover:bg-gray-600 transition-colors cursor-pointer"
 									type="button"
 									onClick={closeModal}
 								>Close</button>

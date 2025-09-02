@@ -65,6 +65,10 @@ export function App() {
 		
     // condition here check data before continuing
     setFormData((prev) => {
+      if (!prev.description) {
+        prev.description = "No Description."
+      }
+
       return {
         ...prev,
         "id": crypto.randomUUID().replaceAll("-" , "")
@@ -112,7 +116,6 @@ export function App() {
     <>
       <div className="flex justify-center bg-gray-200 font-sans">
         <div className="flex flex-col w-[700px] h-screen bg-white p-2">
-
           <div className="grid grid-cols-2 gap-1 h-40">
              <div className="p-1 bg-gray-200 capitalize text-center flex flex-col items-center justify-center">
               <p className="text-2xl font-light">Consumed</p>
@@ -124,16 +127,14 @@ export function App() {
             </div>
           </div>
 
-          {foods.length > 0 && (
-            <div className="mt-1 grid gap-1 w-full">
-              <button className="bg-gray-700 text-white p-3 cursor-pointer hover:bg-gray-600 transition-colors" onClick={openModal}>
-                <div className="flex justify-center items-center">
-                  <Plus className="h-5" />
-                  <p>Meal</p>
-                </div>
-              </button>
-            </div>
-          )}
+          <div className="mt-1 grid gap-1 w-full">
+            <button className="bg-gray-700 text-white p-3 cursor-pointer hover:bg-gray-600 transition-colors" onClick={openModal}>
+              <div className="flex justify-center items-center">
+                <Plus className="h-5" />
+                <p>Meal</p>
+              </div>
+            </button>
+          </div>
 
           <div className="w-full flex-grow overflow-auto">
           {foods.length ? foods.map((meal) => (
@@ -164,11 +165,15 @@ export function App() {
               </label>
             )) : (
               <div className="h-full flex justify-center items-center">
-                <div className="bg-gray-50 w-50 p-2 rounded-lg flex gap-2 justify-center items-center cursor-pointer transition-transform hover:scale-125"
-                  onClick={openModal}
-                >
-                  <Plus className="text-black h-7" />
-                  <p className="font-semibold text-lg">Add Meal</p>
+                <div className="text-center text-gray-500">
+                  <p className="mb-2">No items yet — do you want to add one?</p>
+                  <a className="underline font-semibold hover:text-blue-700 transition-colors delay-200 cursor-pointer" 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      openModal()
+                    }}>
+                    Add Item
+                  </a>
                 </div>
               </div>
             )}

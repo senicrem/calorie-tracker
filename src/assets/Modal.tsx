@@ -16,7 +16,6 @@ export default function Modal (props: Props) {
           ${props.show ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}
           `}>
           <div className="bg-white">
-            test
             { props.children }
           </div>
 				</div>

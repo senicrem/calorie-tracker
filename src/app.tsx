@@ -137,25 +137,31 @@ export function App() {
 
           <div className="w-full flex-grow overflow-auto">
           {foods.length ? foods.map((meal) => (
-              <div key={meal.id}>
+              <label className="cursor-pointer" key={meal.id}>
                 <div>
 										<div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
-											<div className="px-2 flex items-center gap-5">
-												<input className="h-5 w-5 accent-gray-600"
+											<div className="flex items-center gap-3">
+												<input className="h-10 w-10 accent-green-700"
                           type="checkbox"
                           value={meal.id}
                           name="list"
                           onClick={handleCheckBox}
                         />
 												<div>
-													<p>{ meal.title }</p>
-													<p className="text-sm">{ meal.description }</p>
+													<p className="font-semibold">
+                            { meal.title }
+                          </p>
+													<p className="font-light italic truncate">
+                            { meal.description.length > 70 ? meal.description.slice(0, 70) + "..." : meal.description }
+                          </p>
 												</div>
 											</div>
-											<p className="p-1 font-semibold">{ meal.calories}</p>
+											<p className="px-5 h-full font-semibold text-lg">
+                        {meal.calories}<span className="text-sm font-normal text-red-600"> Kcal</span>
+                      </p>
 										</div>
                 </div>
-              </div>
+              </label>
             )) : (
               <div className="h-full flex justify-center items-center">
                 <div className="bg-gray-50 w-50 p-2 rounded-lg flex gap-2 justify-center items-center cursor-pointer transition-transform hover:scale-125"

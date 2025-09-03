@@ -1,19 +1,18 @@
 import { h } from 'preact'
-import { useState, useEffect } from 'preact/hooks'
+import { useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
 import type { MealForm } from '../types/global'
 import { notify } from '../utils/notification'
 import Modal from './Modal'
 import { Plus, Trash } from "./Icons"
+import DummyList from '../data/meallist.json'
+import { useSignal } from '@preact/signals';
+import { store } from '../store'
 
 export function Main() {
-  const MY_DAILY_CALORIES = 1_500
-  const [caloriesRemaining, setCaloriesRemaining] = useState(0)
-  const [caloriesConsumed, setCaloriesConsumed] = useState(0)
-  const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
-  const [foods, setFoods] = useState<MealForm[]>([])
-  const [checkedMeal, setCheckedMeal] = useState<string[]>([])
-  const [formData, setFormData] = useState<MealForm>({
+  const isOpenModal = useSignal<boolean>(false)
+  const toDeleteIds = useSignal<string[]>([])
+  const formData = useSignal<MealForm>({
     id: "",
     title: "",
     description: "",
@@ -21,98 +20,66 @@ export function Main() {
   })
 
   useEffect(() => {
-    let totalCalories = foods.reduce((total, food) => {
-      return total += food.calories
-    }, 0)
-
-    if (typeof totalCalories === "string") {
-      totalCalories = parseInt(totalCalories);
-    }
-
-    setCaloriesRemaining(MY_DAILY_CALORIES - totalCalories)
-    setCaloriesConsumed(totalCalories);
-
-  }, [foods]);
+    store.actions.storeFoodItems(DummyList);
+  }, [])
 
   const openModal = () => {
-    setIsOpenModal(true)
+    isOpenModal.value = true
   }
 
   const closeModal = () => {
-    setIsOpenModal(false)
+    isOpenModal.value = false
 
-    setFormData({
+    formData.value = {
       id: "",
       title: "",
       description: "",
       calories: 0,
-    })
+    }
   }
 
   const handleFormChanges = (e: h.JSX.TargetedEvent<HTMLInputElement | HTMLTextAreaElement, Event>) => {
     const { name, value } = e.currentTarget
-    setFormData((prev) => {
-      return {
-        ...prev,
-        [name]: value
-      }
-    })
+    formData.value = {
+      ...formData.value,
+      [name]: name === "calories" ? parseFloat(value) : value
+    }
   }
 
   const saveForm = (e: FormEvent) => {
     e.preventDefault();
 
-    setFormData((prev) => {
-      if (!prev.description) {
-        prev.description = "No Description."
-      }
+    formData.value.id = crypto.randomUUID().replaceAll("-", "")
 
-      return {
-        ...prev,
-        "id": crypto.randomUUID().replaceAll("-", "")
-      }
-    })
+    if (formData.value.description.length === 0 ) {
+      formData.value.description = "No Description."; 
+    }
 
-    setFoods((prev) => {
-      return [...prev, formData].reverse()
-    })
-
+    store.actions.addFoodItem(formData.value)
     notify("success","New item created")
     closeModal()
   }
 
   const handleCheckBox = (e: h.JSX.TargetedEvent<HTMLInputElement, Event>) => {
-    const { checked, value: checkValue } = e.currentTarget;
+    const { checked, value: id } = e.currentTarget;
 
     if (checked) {
-      setCheckedMeal((prev) => [
-        ...prev,
-        checkValue
-      ])
+      toDeleteIds.value = [ ...toDeleteIds.value, id ]
     }
 
     if (!checked) {
-      const idx = checkedMeal.findIndex(meal => meal === checkValue);
-      checkedMeal.filter((_, i) => i != idx)
-      setCheckedMeal([
-        ...checkedMeal.filter((_, i) => i != idx)
-      ])
+      const idx = toDeleteIds.value.findIndex(meal => meal === id);
+      
+      toDeleteIds.value = [
+        ...toDeleteIds.value.filter((_, i) => i != idx)
+      ]
     }
   }
 
   const deleteMeals = () => {
-    const meals = foods.filter(meal => {
-      if (checkedMeal.includes(meal.id)) return;
-      return meal
-    })
-    
-    notify(
-      "danger",
-      `Gone! ${checkedMeal.length} item/s removed.`,
-    )
-
-    setFoods(meals);
-    setCheckedMeal([]);
+    store.actions.deleteFoodItems(toDeleteIds.value)
+    notify("danger", `Gone! ${toDeleteIds.value.length} item/s removed.`, 1000)
+    toDeleteIds.value = [];
   }
 
   return (
@@ -122,11 +89,11 @@ export function Main() {
           <div className="grid grid-cols-2 gap-1 h-40">
             <div className="p-1 bg-gray-200 capitalize text-center flex flex-col items-center justify-center">
               <p className="text-2xl font-light">Consumed</p>
-              <p className="text-2xl font-semibold">{caloriesConsumed}</p>
+              <p className="text-2xl font-semibold">{ store.getters.consumedCalories.value }</p>
             </div>
             <div className="p-1 bg-gray-200 capitalize text-center  flex flex-col items-center justify-center">
               <p className="text-2xl font-light">Remaining</p>
-              <p className="text-2xl font-semibold">{caloriesRemaining}</p>
+              <p className="text-2xl font-semibold">{ store.getters.remainingCalories.value }</p>
             </div>
           </div>
 
@@ -140,7 +107,7 @@ export function Main() {
           </div>
 
           <div className="w-full flex-grow overflow-auto">
-            {foods.length ? foods.map((meal) => (
+            {store.getters.getfoodItems.value.length ? store.getters.getfoodItems.value.map((meal) => (
               <label className="cursor-pointer" key={meal.id}>
                 <div>
                   <div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
@@ -182,13 +149,13 @@ export function Main() {
             )}
           </div>
 
-          {checkedMeal.length > 0 && (
+          {toDeleteIds.value.length > 0 && (
             <button className="bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-colors" onClick={deleteMeals}>
               <div className="flex justify-center items-center gap-1">
                 <Trash className="h-5" />
                 <p className="text-lg font-semibold">
                   Delete
-                  <span className="font-semilight"> ({checkedMeal.length})</span>
+                  <span className="font-semilight"> ({toDeleteIds.value.length})</span>
                 </p>
               </div>
             </button>
@@ -196,7 +163,7 @@ export function Main() {
         </div>
       </div>
 
-      <Modal show={isOpenModal}>
+      <Modal show={isOpenModal.value}>
         <div className="bg-white p-6 shadow-lg w-[600px]">
           <form onSubmit={saveForm}>
             <h2 className="text-xl font-bold">Add Meal</h2>

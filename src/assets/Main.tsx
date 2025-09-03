@@ -1,19 +1,21 @@
 import { h } from 'preact'
-import { useState, useEffect } from 'preact/hooks'
+import { useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
 import type { MealForm } from '../types/global'
 import { notify } from '../utils/notification'
 import Modal from './Modal'
 import { Plus, Trash } from "./Icons"
 
+import { useSignal } from '@preact/signals';
+
 export function Main() {
   const MY_DAILY_CALORIES = 1_500
-  const [caloriesRemaining, setCaloriesRemaining] = useState(0)
-  const [caloriesConsumed, setCaloriesConsumed] = useState(0)
-  const [isOpenModal, setIsOpenModal] = useState<boolean>(false)
-  const [foods, setFoods] = useState<MealForm[]>([])
-  const [checkedMeal, setCheckedMeal] = useState<string[]>([])
-  const [formData, setFormData] = useState<MealForm>({
+  const caloriesRemaining = useSignal(0)
+  const caloriesConsumed = useSignal(0)
+  const isOpenModal = useSignal<boolean>(false)
+  const foods = useSignal<MealForm[]>([])
+  const checkedMeal = useSignal<string[]>([])
+  const formData = useSignal<MealForm>({
     id: "",
     title: "",
     description: "",
@@ -21,7 +23,7 @@ export function Main() {
   })
 
   useEffect(() => {
-    let totalCalories = foods.reduce((total, food) => {
+    let totalCalories = foods.value.reduce((total, food) => {
       return total += food.calories
     }, 0)
 
@@ -29,53 +31,46 @@ export function Main() {
       totalCalories = parseInt(totalCalories);
     }
 
-    setCaloriesRemaining(MY_DAILY_CALORIES - totalCalories)
-    setCaloriesConsumed(totalCalories);
-
+    caloriesRemaining.value = MY_DAILY_CALORIES - totalCalories
+    caloriesConsumed.value = totalCalories
   }, [foods]);
 
   const openModal = () => {
-    setIsOpenModal(true)
+    isOpenModal.value = true
   }
 
   const closeModal = () => {
-    setIsOpenModal(false)
+    isOpenModal.value = false
 
-    setFormData({
+    formData.value = {
       id: "",
       title: "",
       description: "",
       calories: 0,
-    })
+    }
   }
 
   const handleFormChanges = (e: h.JSX.TargetedEvent<HTMLInputElement | HTMLTextAreaElement, Event>) => {
     const { name, value } = e.currentTarget
-    setFormData((prev) => {
-      return {
-        ...prev,
-        [name]: value
-      }
-    })
+    formData.value = {
+      ...formData.value,
+      [name]: name === "calories" ? parseFloat(value) : value
+    }
   }
 
   const saveForm = (e: FormEvent) => {
     e.preventDefault();
 
-    setFormData((prev) => {
-      if (!prev.description) {
-        prev.description = "No Description."
-      }
+    formData.value.id = crypto.randomUUID().replaceAll("-", "")
 
-      return {
-        ...prev,
-        "id": crypto.randomUUID().replaceAll("-", "")
-      }
-    })
+    if (formData.value.description.length === 0 ) {
+      formData.value.description = "No Description."; 
+    }
 
-    setFoods((prev) => {
-      return [...prev, formData].reverse()
-    })
+    foods.value = [
+      ...foods.value,
+      formData.value
+    ].reverse()
 
     notify("success","New item created")
     closeModal()
@@ -85,34 +80,34 @@ export function Main() {
     const { checked, value: checkValue } = e.currentTarget;
 
     if (checked) {
-      setCheckedMeal((prev) => [
-        ...prev,
+      checkedMeal.value = [
+        ...checkedMeal.value,
         checkValue
-      ])
+      ]
     }
 
     if (!checked) {
-      const idx = checkedMeal.findIndex(meal => meal === checkValue);
-      checkedMeal.filter((_, i) => i != idx)
-      setCheckedMeal([
-        ...checkedMeal.filter((_, i) => i != idx)
-      ])
+      const idx = checkedMeal.value.findIndex(meal => meal === checkValue);
+      
+      checkedMeal.value = [
+        ...checkedMeal.value.filter((_, i) => i != idx)
+      ]
     }
   }
 
   const deleteMeals = () => {
-    const meals = foods.filter(meal => {
-      if (checkedMeal.includes(meal.id)) return;
+    const meals = foods.value.filter(meal => {
+      if (checkedMeal.value.includes(meal.id)) return;
       return meal
     })
     
     notify(
       "danger",
-      `Gone! ${checkedMeal.length} item/s removed.`,
+      `Gone! ${checkedMeal.value.length} item/s removed.`,
     )
 
-    setFoods(meals);
-    setCheckedMeal([]);
+    foods.value = meals;
+    checkedMeal.value = [];
   }
 
   return (
@@ -140,7 +135,7 @@ export function Main() {
           </div>
 
           <div className="w-full flex-grow overflow-auto">
-            {foods.length ? foods.map((meal) => (
+            {foods.value.length ? foods.value.map((meal) => (
               <label className="cursor-pointer" key={meal.id}>
                 <div>
                   <div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
@@ -182,13 +177,13 @@ export function Main() {
             )}
           </div>
 
-          {checkedMeal.length > 0 && (
+          {checkedMeal.value.length > 0 && (
             <button className="bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-colors" onClick={deleteMeals}>
               <div className="flex justify-center items-center gap-1">
                 <Trash className="h-5" />
                 <p className="text-lg font-semibold">
                   Delete
-                  <span className="font-semilight"> ({checkedMeal.length})</span>
+                  <span className="font-semilight"> ({checkedMeal.value.length})</span>
                 </p>
               </div>
             </button>
@@ -196,7 +191,7 @@ export function Main() {
         </div>
       </div>
 
-      <Modal show={isOpenModal}>
+      <Modal show={isOpenModal.value}>
         <div className="bg-white p-6 shadow-lg w-[600px]">
           <form onSubmit={saveForm}>
             <h2 className="text-xl font-bold">Add Meal</h2>

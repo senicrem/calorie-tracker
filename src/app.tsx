@@ -4,7 +4,6 @@ import 'react-notifications-component/dist/theme.css'
 import 'preact/debug';
 
 export function App() {
-
   return (
     <>
       <ReactNotifications />

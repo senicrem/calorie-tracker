@@ -8,6 +8,7 @@ import { Plus, Trash } from "./Icons"
 import DummyList from '../data/meallist.json'
 import { useSignal } from '@preact/signals';
 import { store } from '../store'
+import { IndexedDBWrapper } from '../utils/indexedDbWrapper'
 
 export function Main() {
   const isOpenModal = useSignal<boolean>(false)
@@ -19,9 +20,18 @@ export function Main() {
     calories: 0,
   })
 
+  const DB = useSignal<any>(undefined)
+
   useEffect(() => {
     store.actions.storeFoodItems(DummyList);
+    connectToDB(); // connect indexeddb
   }, [])
+
+  const connectToDB = async() => {
+    let dbInstance = new IndexedDBWrapper("foods", 1)
+    await dbInstance.connect();
+    DB.value = dbInstance;
+  }
 
   const openModal = () => {
     isOpenModal.value = true

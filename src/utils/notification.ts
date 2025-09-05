@@ -4,7 +4,6 @@ import { Store,
   type NOTIFICATION_INSERTION, 
 } from 'react-notifications-component';
 
-
 const defaultOptions = {
   title: "Wonderful!",
   message: "teodosii@react-notifications-component",

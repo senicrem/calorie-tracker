@@ -5,9 +5,9 @@ import type { MealForm } from '../types/global'
 import { notify } from '../utils/notification'
 import Modal from './Modal'
 import { Plus, Trash } from "./Icons"
-import DummyList from '../data/meallist.json'
 import { useSignal } from '@preact/signals';
 import { store } from '../store'
+import { IndexedDBWrapper } from '../utils/indexedDbWrapper'
 
 export function Main() {
   const isOpenModal = useSignal<boolean>(false)
@@ -19,9 +19,23 @@ export function Main() {
     calories: 0,
   })
 
+  const DB = useSignal<IndexedDBWrapper>()
+
   useEffect(() => {
-    store.actions.storeFoodItems(DummyList);
+    (async() => {
+      await connectToDB();
+      if (!DB.value) return;
+      // get items on indexedDb
+      const items = await DB.value.getItems('items')
+      store.actions.storeFoodItems(items as MealForm[])
+    })()
   }, [])
+
+  const connectToDB = async() => {
+    let dbInstance = new IndexedDBWrapper("foods", 1)
+    await dbInstance.connect()
+    DB.value = dbInstance
+  }
 
   const openModal = () => {
     isOpenModal.value = true
@@ -46,7 +60,7 @@ export function Main() {
     }
   }
 
-  const saveForm = (e: FormEvent) => {
+  const saveForm = async(e: FormEvent) => {
     e.preventDefault();
 
     formData.value.id = crypto.randomUUID().replaceAll("-", "")
@@ -55,8 +69,9 @@ export function Main() {
       formData.value.description = "No Description."; 
     }
 
+    await DB.value?.add('items', formData.value)
     store.actions.addFoodItem(formData.value)
-    notify("success","New item created")
+    notify("success","New item created", 700)
     closeModal()
   }
 
@@ -76,9 +91,19 @@ export function Main() {
     }
   }
 
-  const deleteMeals = () => {
+  const deleteMeals = async () => {
+    const dbDeleteFunctions: Promise<unknown>[] = []
+
+    toDeleteIds.value.forEach(id => {
+      if (!DB.value) return;
+      dbDeleteFunctions.push(
+        DB.value.delete('items', id)
+      )
+    })
+    
+    await Promise.all(dbDeleteFunctions)
     store.actions.deleteFoodItems(toDeleteIds.value)
-    notify("danger", `Gone! ${toDeleteIds.value.length} item/s removed.`, 1000)
+    notify("danger", `Gone! ${toDeleteIds.value.length} item/s removed.`, 700)
     toDeleteIds.value = [];
   }
 

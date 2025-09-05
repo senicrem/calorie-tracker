@@ -1,5 +1,5 @@
 import { h } from 'preact'
-import type { FormEvent } from 'preact/compat'
+import { useRef, type FormEvent } from 'preact/compat'
 import type { MealForm } from '../types/global'
 import { notify } from '../utils/notification'
 import Modal from './Modal'
@@ -18,6 +18,7 @@ export function Main() {
   const isOpenModal = useSignal<boolean>(false)
   const toDeleteIds = useSignal<string[]>([])
   const formData = useSignal<MealForm>(DEFAULT_FORM_VALUE)
+  const formRef = useRef<HTMLFormElement>(null)
 
   const openModal = () => {
     isOpenModal.value = true
@@ -26,6 +27,9 @@ export function Main() {
   const closeModal = () => {
     isOpenModal.value = false
     formData.value = DEFAULT_FORM_VALUE
+
+    if(!formRef.current) return;
+    formRef.current.reset()
   }
 
   const handleFormChanges = (e: h.JSX.TargetedEvent<HTMLInputElement | HTMLTextAreaElement, Event>) => {
@@ -158,7 +162,7 @@ export function Main() {
 
       <Modal show={isOpenModal.value}>
         <div className="bg-white p-6 shadow-lg w-[600px]">
-          <form onSubmit={saveForm}>
+          <form ref={formRef} onSubmit={saveForm}>
             <h2 className="text-xl font-bold">Add Meal</h2>
             <div className="flex flex-col py-5 gap-2">
               <label htmlFor="">Title</label>

@@ -2,14 +2,14 @@
 
 type StoreIndexData = {
   name: string
-  options: {
+  options?: {
     unique: boolean
     multiEntry: boolean
   }
 }
 
 export class IndexedDBWrapper {
-  protected db!: IDBDatabase
+  private db!: IDBDatabase
   db_name: string
   db_version: number
 
@@ -20,16 +20,25 @@ export class IndexedDBWrapper {
 
   async connect() {
     // indexedDB.deleteDatabase(this.db_name) // to trigger onupgradeneeded
-
     this.db = await new Promise((resolve, reject) => {
       const reqConnection = indexedDB.open(this.db_name, this.db_version)
 
-      reqConnection.onupgradeneeded = () => {
-        // this onupgradeneeded eventlistener is triggered whenever there are changes on version;
-        console.log("onupgradeneeded eventlistener")
+      // this onupgradeneeded eventlistener is triggered whenever there are changes on version;
+      reqConnection.onupgradeneeded = async (event) => {
+        const db = (event.target as IDBOpenDBRequest).result;
+        const store = db.createObjectStore("items", { keyPath: "id" })
+        const indexes = [
+          { name: "title" },
+          { name: "description" },
+          { name: "calories" },
+        ]
+
+        indexes.forEach(d => {
+          store.createIndex(`index${d.name}`, d.name);
+        })
       }
 
-      reqConnection.onsuccess = () => {
+      reqConnection.onsuccess = async() => {
         console.log("✅ Successfully connected to IndexedDB:", reqConnection.result.name);
         resolve(reqConnection.result)
       }
@@ -39,13 +48,6 @@ export class IndexedDBWrapper {
         reject(reqConnection.error)
       }
     })
-  }
-
-  createStore(name: string) {
-    this.db.createObjectStore(
-      name,
-      { keyPath: "id", autoIncrement: true }
-    );
   }
 
   async createStoreIndexes(storeName: string, data: StoreIndexData[]) {
@@ -63,36 +65,42 @@ export class IndexedDBWrapper {
 
   getStoreInstance(storeName: string, mode: IDBTransactionMode): Promise<IDBObjectStore> {
     return new Promise((resolve) => {
-      const transaction = this.db.transaction(storeName, mode);
-      
-      transaction.oncomplete = () => {
+      try {
+        const transaction = this.db.transaction(storeName, mode);
         const store = transaction.objectStore(storeName);
         resolve(store)
-      }
-      transaction.onerror = () => {
+      } catch (error) {
         throw new Error(`Store ${storeName} not found!`)
       }
     })
   }
 
-  async add(storeName: string, data:any) {
-      return new Promise(async (resolve) => {
-        try {
-          const store = await this.getStoreInstance(storeName, "readwrite")
-          const request = store.add(data)
-          
-          request.onsuccess = () => {
-            resolve("Successfully Saved!")
-          }
-
-          request.onerror = (_e) => {
-            throw new Error(`Error: add function`)
-          }
-        } catch (error) { 
-          console.error(error)
-        }
-      })
+  getItems (storeName: string) {
+    return new Promise(async(resolve, reject) => {
+      const store = await this.getStoreInstance(storeName, "readonly")
+      const res = store.getAll()
+      res.onsuccess = () => resolve(res.result)
+      res.onerror = () => reject()
+    })
   }
 
-  async delete() {}
+  async add(storeName: string, data:any) {
+    return new Promise(async (resolve) => {
+        const store = await this.getStoreInstance(storeName, "readwrite")
+        const request = store.add(data)
+        
+        request.onsuccess = () => resolve("Successfully Saved!")
+        request.onerror = () => { throw new Error(`Error: add function`) }
+    })
+  }
+
+  async delete(storeName: string, id:string) {
+    return new Promise(async (resolve) => {
+        const store = await this.getStoreInstance(storeName, "readwrite")
+        const request = store.delete(id)
+        
+        request.onsuccess = () => resolve("Successfully Deleted!")
+        request.onerror = () => { throw new Error(`Error: delete function`) }
+    })
+  }
 }

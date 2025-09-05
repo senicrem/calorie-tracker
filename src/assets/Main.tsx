@@ -97,12 +97,12 @@ export function Main() {
             </button>
           </div>
 
-          <div className="w-full flex-grow overflow-auto bg-gray-50">
+          <div className="w-full flex-grow overflow-auto bg-gray-200">
             {store.getters.getfoodItems.value.length ? store.getters.getfoodItems.value.map((meal) => (
               <label className="cursor-pointer" key={meal.id}>
                 <div>
-                  <div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
+                  <div className="group flex justify-between items-center border-b-1 transition-all border-b-white hover:bg-gray-50">
+                    <div className="flex items-center gap-3 pl-1">
                       <input className="h-10 w-10 accent-green-700"
                         type="checkbox"
                         value={meal.id}
@@ -118,7 +118,7 @@ export function Main() {
                         </p>
                       </div>
                     </div>
-                    <p className="px-5 h-full font-semibold text-lg">
+                    <p className="pr-2 h-full font-semibold text-lg">
                       {meal.calories}<span className="text-sm font-normal text-red-600"> Kcal</span>
                     </p>
                   </div>
@@ -141,10 +141,8 @@ export function Main() {
           </div>
 
 
-          <button
-            className={`bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-all
-              ${toDeleteIds.value.length > 0 ? 'opacity-100': 'opacity-0'}
-            `}
+          <button className={`bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-all delay-200
+            ${toDeleteIds.value.length > 0 ? 'opacity-100': 'opacity-0'}`}
           onClick={deleteMeals}>
             <div className="flex justify-center items-center gap-1">
               <Trash className="h-5" />

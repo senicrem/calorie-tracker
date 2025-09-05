@@ -1,41 +1,23 @@
 import { h } from 'preact'
-import { useEffect } from 'preact/hooks'
 import type { FormEvent } from 'preact/compat'
 import type { MealForm } from '../types/global'
 import { notify } from '../utils/notification'
 import Modal from './Modal'
 import { Plus, Trash } from "./Icons"
+import CaloriesSection from './CaloriesSection'
 import { useSignal } from '@preact/signals';
 import { store } from '../store'
-import { IndexedDBWrapper } from '../utils/indexedDbWrapper'
 
 export function Main() {
-  const isOpenModal = useSignal<boolean>(false)
-  const toDeleteIds = useSignal<string[]>([])
-  const formData = useSignal<MealForm>({
+  const DEFAULT_FORM_VALUE = {
     id: "",
     title: "",
     description: "",
     calories: 0,
-  })
-
-  const DB = useSignal<IndexedDBWrapper>()
-
-  useEffect(() => {
-    (async() => {
-      await connectToDB();
-      if (!DB.value) return;
-      // get items on indexedDb
-      const items = await DB.value.getItems('items')
-      store.actions.storeFoodItems(items as MealForm[])
-    })()
-  }, [])
-
-  const connectToDB = async() => {
-    let dbInstance = new IndexedDBWrapper("foods", 1)
-    await dbInstance.connect()
-    DB.value = dbInstance
   }
+  const isOpenModal = useSignal<boolean>(false)
+  const toDeleteIds = useSignal<string[]>([])
+  const formData = useSignal<MealForm>(DEFAULT_FORM_VALUE)
 
   const openModal = () => {
     isOpenModal.value = true
@@ -43,13 +25,7 @@ export function Main() {
 
   const closeModal = () => {
     isOpenModal.value = false
-
-    formData.value = {
-      id: "",
-      title: "",
-      description: "",
-      calories: 0,
-    }
+    formData.value = DEFAULT_FORM_VALUE
   }
 
   const handleFormChanges = (e: h.JSX.TargetedEvent<HTMLInputElement | HTMLTextAreaElement, Event>) => {
@@ -69,7 +45,7 @@ export function Main() {
       formData.value.description = "No Description."; 
     }
 
-    await DB.value?.add('items', formData.value)
+    await store.state.DBInstance.value?.add('items', formData.value)
     store.actions.addFoodItem(formData.value)
     notify("success","New item created", 700)
     closeModal()
@@ -95,9 +71,9 @@ export function Main() {
     const dbDeleteFunctions: Promise<unknown>[] = []
 
     toDeleteIds.value.forEach(id => {
-      if (!DB.value) return;
+      if (!store.state.DBInstance.value) return;
       dbDeleteFunctions.push(
-        DB.value.delete('items', id)
+        store.state.DBInstance.value.delete('items', id)
       )
     })
     
@@ -109,19 +85,9 @@ export function Main() {
 
   return (
     <>
-      <div className="flex justify-center bg-gray-200 font-sans">
+      <div className="flex justify-center bg-gradient-to-b from-gray-500/50 to-gray-900 font-sans">
         <div className="flex flex-col w-[700px] h-screen bg-white p-2">
-          <div className="grid grid-cols-2 gap-1 h-40">
-            <div className="p-1 bg-gray-200 capitalize text-center flex flex-col items-center justify-center">
-              <p className="text-2xl font-light">Consumed</p>
-              <p className="text-2xl font-semibold">{ store.getters.consumedCalories.value }</p>
-            </div>
-            <div className="p-1 bg-gray-200 capitalize text-center  flex flex-col items-center justify-center">
-              <p className="text-2xl font-light">Remaining</p>
-              <p className="text-2xl font-semibold">{ store.getters.remainingCalories.value }</p>
-            </div>
-          </div>
-
+          <CaloriesSection />
           <div className="mt-1 grid gap-1 w-full">
             <button className="bg-gray-700 text-white p-3 cursor-pointer hover:bg-gray-600 transition-colors" onClick={openModal}>
               <div className="flex justify-center items-center">
@@ -131,12 +97,12 @@ export function Main() {
             </button>
           </div>
 
-          <div className="w-full flex-grow overflow-auto">
+          <div className="w-full flex-grow overflow-auto bg-gray-200">
             {store.getters.getfoodItems.value.length ? store.getters.getfoodItems.value.map((meal) => (
               <label className="cursor-pointer" key={meal.id}>
                 <div>
-                  <div className="group flex justify-between items-center border-b-1 transition-all border-b-gray-200 hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
+                  <div className="group flex justify-between items-center border-b-1 transition-all border-b-white hover:bg-gray-50">
+                    <div className="flex items-center gap-3 pl-1">
                       <input className="h-10 w-10 accent-green-700"
                         type="checkbox"
                         value={meal.id}
@@ -152,7 +118,7 @@ export function Main() {
                         </p>
                       </div>
                     </div>
-                    <p className="px-5 h-full font-semibold text-lg">
+                    <p className="pr-2 h-full font-semibold text-lg">
                       {meal.calories}<span className="text-sm font-normal text-red-600"> Kcal</span>
                     </p>
                   </div>
@@ -174,17 +140,19 @@ export function Main() {
             )}
           </div>
 
-          {toDeleteIds.value.length > 0 && (
-            <button className="bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-colors" onClick={deleteMeals}>
-              <div className="flex justify-center items-center gap-1">
-                <Trash className="h-5" />
-                <p className="text-lg font-semibold">
-                  Delete
-                  <span className="font-semilight"> ({toDeleteIds.value.length})</span>
-                </p>
-              </div>
-            </button>
-          )}
+
+          <button className={`bg-red-700 text-white p-2 cursor-pointer hover:bg-red-600 transition-all delay-200
+            ${toDeleteIds.value.length > 0 ? 'opacity-100': 'opacity-0'}`}
+          onClick={deleteMeals}>
+            <div className="flex justify-center items-center gap-1">
+              <Trash className="h-5" />
+              <p className="text-lg font-semibold">
+                Delete
+                <span className="font-semilight"> ({toDeleteIds.value.length})</span>
+              </p>
+            </div>
+          </button>
+
         </div>
       </div>
 

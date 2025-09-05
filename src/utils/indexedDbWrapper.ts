@@ -1,6 +1,6 @@
 // https://www.w3.org/TR/IndexedDB
 
-type StoreIndexData = {
+export type StoreIndexData = {
   name: string
   options?: {
     unique: boolean
@@ -26,7 +26,8 @@ export class IndexedDBWrapper {
       // this onupgradeneeded eventlistener is triggered whenever there are changes on version;
       reqConnection.onupgradeneeded = async (event) => {
         const db = (event.target as IDBOpenDBRequest).result;
-        const store = db.createObjectStore("items", { keyPath: "id" })
+        // Items Table
+        const ItemsStore = db.createObjectStore("items", { keyPath: "id" })
         const indexes = [
           { name: "title" },
           { name: "description" },
@@ -34,8 +35,12 @@ export class IndexedDBWrapper {
         ]
 
         indexes.forEach(d => {
-          store.createIndex(`index${d.name}`, d.name);
+          ItemsStore.createIndex(`index${d.name}`, d.name);
         })
+        // Settings Table
+        const SettingsStore = db.createObjectStore("settings", { keyPath: "id", autoIncrement: true })
+        SettingsStore.createIndex('daily_calorie_count', 'daily_calorie_count');
+        SettingsStore.add({ daily_calorie_count: 2500 })
       }
 
       reqConnection.onsuccess = async() => {
@@ -48,19 +53,6 @@ export class IndexedDBWrapper {
         reject(reqConnection.error)
       }
     })
-  }
-
-  async createStoreIndexes(storeName: string, data: StoreIndexData[]) {
-    try {
-      const store = await this.getStoreInstance(storeName, "readwrite");
-
-      data.forEach((d) => {
-        const indexName = `${d.name}Index`;
-        store.createIndex(indexName, d.name, d.options)
-      })
-    } catch (error) {
-      console.error(error)
-    }
   }
 
   getStoreInstance(storeName: string, mode: IDBTransactionMode): Promise<IDBObjectStore> {
@@ -90,6 +82,15 @@ export class IndexedDBWrapper {
         const request = store.add(data)
         
         request.onsuccess = () => resolve("Successfully Saved!")
+        request.onerror = () => { throw new Error(`Error: add function`) }
+    })
+  }
+
+  async update(storeName:string, data:any) {
+    return new Promise(async (resolve) => {
+        const store = await this.getStoreInstance(storeName, "readwrite")
+        const request = store.put(data)
+        request.onsuccess = () => resolve("Successfully updated!")
         request.onerror = () => { throw new Error(`Error: add function`) }
     })
   }
